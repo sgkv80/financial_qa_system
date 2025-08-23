@@ -1,0 +1,18 @@
+# Global project configurations
+project:
+  name: "Financial QA System"
+  seed: 42
+  log_level: "INFO"           # Options: DEBUG, INFO, WARNING, ERROR
+
+paths:
+  raw_data: "data/raw/"
+  processed_data: "data/processed/"
+  chunk_files: "data/chunks"
+  embeddings: "data/embeddings/"
+  models: "models/"
+  logs: "logs/system.log"
+
+interface:
+  type: "streamlit"           # Options: streamlit, gradio, cli
+  default_mode: "rag"         # Default selection when UI loads
+

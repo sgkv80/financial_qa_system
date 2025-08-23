@@ -1,0 +1,16 @@
+streamlit
+pytesseract
+fitz
+pdf2image
+PyPDF2
+tesseract
+pillow
+pandas
+scikit-learn
+sentence-transformers
+faiss-cpu
+chromadb
+transformers
+torch
+openpyxl
+rank_bm25

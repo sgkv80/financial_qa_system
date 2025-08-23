@@ -1,0 +1,51 @@
+# Logging configuration for Financial QA System
+
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  simple:
+    format: "[%(asctime)s] %(levelname)s - %(name)s - %(message)s"
+  detailed:
+    format: "[%(asctime)s] %(levelname)s - %(name)s - %(module)s:%(lineno)d - %(message)s"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simple
+    stream: ext://sys.stdout
+  file:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: detailed
+    filename: ./data/logs/app.log
+    maxBytes: 1048576  # 1MB
+    backupCount: 5
+    encoding: utf8
+
+loggers:
+  app:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+  data_processing:
+    level: DEBUG
+    handlers: [file]
+    propagate: no
+  retrieval:
+    level: INFO
+    handlers: [file]
+    propagate: no
+  fine_tuning:
+    level: INFO
+    handlers: [file]
+    propagate: no
+  interface:
+    level: INFO
+    handlers: [file]
+    propagate: no
+
+root:
+  level: INFO
+  handlers: [console, file]
