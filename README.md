@@ -12,19 +12,76 @@ Develop and compare two systems for answering questions based on company financi
 
 ```
 financial_qa_system/
-├── config/                 # Configuration files
-├── data/                  # Data storage (raw, processed, datasets)
-├── src/                   # Source code
-│   ├── core/             # Core utilities and base classes
-│   ├── data_processing/  # Data preprocessing pipeline
-│   ├── rag_system/      # RAG implementation
-│   ├── finetuning_system/ # Fine-tuning implementation
-│   ├── evaluation/      # Evaluation and comparison
-│   └── interface/       # User interfaces
-├── models/               # Trained models storage
-├── logs/                # Application logs
-├── results/             # Evaluation results
-└── notebooks/           # Jupyter notebooks
+│
+├── configs/                     # Centralized configs (no hardcoding)
+│   ├── app_config.yaml          # Global settings (paths, logging level, etc.)
+│   ├── gaurdrail_config.yaml    # invalid words etc
+│   ├── rag_config.yaml          # RAG-specific configs
+│   └── finetune_config.yaml     # Fine-tuning configs
+│
+├── data/
+│   ├── raw/                     # Original raw data (PDFs, JSON Q&A)
+│   │   ├── amazon_2023.pdf
+│   │   ├── amazon_2024.pdf
+│   │   └── qa_pairs.json
+│   ├── qa/                      # qa created for fine tuning
+│   ├── processed/               # Processed data (cleaned text)
+│   ├── chunks/                  # chunks from processed text
+│   └── embeddings/              # Vector stores (FAISS, ChromaDB)
+│
+├── logs/
+│   └── system.log               # Consolidated logs
+│
+├── models/
+│   ├── rag/                     # Saved RAG pipeline models
+│   └── finetuned/               # Saved fine-tuned models
+│
+├── notebooks/                   # Exploration notebooks
+│
+├── src/
+│   ├── __init__.py
+│   │
+│   ├── utils/                   # Utility functions (shared)
+│   │   ├── logger.py            # Logging setup
+│   │   ├── config_loader.py     # Load YAML configs
+│   │   └── evaluation.py        # Evaluation metrics
+│   │
+│   ├── data_processing/         # All data-related processing
+│   │   ├── preprocess.py        # Cleaning, text extraction
+│   │   ├── chunking.py          # Split into chunks
+│   │   └── dataset_prep.py      # Prepare Q&A dataset for FT
+│   │
+│   ├── llm_pipeline/            # common classes required for RAG and FineTuning
+│   │   ├── base_qa_system.py    # Base class for RAGPipeline and FineTunePineline
+│   │   └── guardrails.py        # Input and output guardrail implementation
+│   │
+│   ├── rag_pipeline/            # Retrieval-Augmented Generation modules
+│   │   ├── pipeline.py          # RAG pipeline setup, safe_answer
+│   │   ├── embed_index.py       # Build & store dense + sparse indices
+│   │   ├── retrieval.py         # Hybrid retrieval logic
+│   │   ├── reranker.py          # Multi-stage retrieval re-ranking
+│   │   └── generator.py         # RResponse generation module
+│   │
+│   ├── finetune_pipeline/       # Fine-tuning modules
+│   │   ├── baseline_eval.py     # Pre-fine-tuning benchmarking
+│   │   ├── trainer.py           # Fine-tuning loop
+│   │   ├── instruction_ft.py    # Supervised Instruction Fine-tuning
+│   │   └── guardrails.py        # Fine-tuning guardrail
+│   │
+│   ├── interface/               # Frontend/UI
+│   │   ├── app.py               # Streamlit/Gradio entry point
+│   │   └── components.py        # UI components (switch modes, display confidence, etc.)
+│   │
+│   └── deployment/              # Model & pipeline loading for inference
+│       ├── load_model.py        # Load saved fine-tuned model
+│       └── load_rag.py          # Load vector store & generation pipeline
+│
+└── tests/
+    ├── test_rag.py              # Unit tests for RAG modules
+    ├── test_finetune.py         # Unit tests for fine-tuning
+    └── test_interface.py        # UI and integration tests
+
+
 ```
 
 ## 🚀 Quick Start
@@ -38,7 +95,7 @@ financial_qa_system/
 
 2. **Prepare Data**
    - Place your financial reports in `data/raw/`
-   - Ensure Q&A pairs are in `data/raw/qa_pairs.json`
+   - Ensure Q&A pairs are in `data/qa/qa_pairs.json`
 
 3. **Configure System**
    ```bash
@@ -134,7 +191,6 @@ Results are automatically saved to:
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## 🔗 References
 
