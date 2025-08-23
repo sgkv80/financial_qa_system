@@ -175,7 +175,7 @@ class RAGPipeline(BaseQASystem):
     @property
     def generator(self) -> Generator:
         if self._generator is None:
-            self._generator = Generator(self.gen_model_name, self.gen_max_out)
+            self._generator = Generator(self.gen_model_name, self.gen_max_out, self.base_config_path)
         return self._generator
 
     # ---------- Core QA ----------
@@ -203,6 +203,7 @@ class RAGPipeline(BaseQASystem):
                 h["chunk_size"] = size  # keep source size
             candidates.extend(hits)
 
+        #TODO remove hardcoding
         with open(os.path.join(r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\logs', 'hybrid_retrieval_chunks.json'), "w", encoding="utf-8") as json_file:
             json.dump(candidates, json_file, indent=4)
 
@@ -210,7 +211,7 @@ class RAGPipeline(BaseQASystem):
         # Deduplicate by (text, metadata.id) while preserving best score
         dedup: Dict[str, dict] = {}
         for c in candidates:
-            key = f'{c.get("metadata", {}).get("doc_id", "")}|{c["text"]}'
+            key = f'{c.get("metadata", {}).get("id", "")}|{c["text"]}'
             if key not in dedup or c.get("score", 0) > dedup[key].get("score", -1e9):
                 dedup[key] = c
         candidates = list(dedup.values())

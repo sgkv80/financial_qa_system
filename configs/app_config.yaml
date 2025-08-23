@@ -6,6 +6,7 @@ project:
 
 paths:
   raw_data: "data/raw/"
+  qa_dataset:  "data/qna/amazon_qa_dataset.json"
   processed_data: "data/processed/"
   chunk_files: "data/chunks"
   embeddings: "data/embeddings/"

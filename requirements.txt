@@ -2,6 +2,7 @@ streamlit
 pytesseract
 fitz
 pdf2image
+pytesseract
 PyPDF2
 tesseract
 pillow
