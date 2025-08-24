@@ -8,7 +8,7 @@ Supports multiple chunk sizes and adds metadata to each chunk.
 import os
 import json
 from utils.logger import get_logger
-from utils.config_loader import load_config
+from utils.config_loader import load_config, get_root_dir
 
 from transformers import AutoTokenizer  # Import tokenizer
 
@@ -25,10 +25,10 @@ class Chunker:
         self.base_config = load_config(base_config_path)
         self.rag_config = load_config(rag_config_path)
 
-        self.input_dir = self.base_config["paths"]["processed_data"]
-        self.output_dir = self.base_config["paths"]["chunk_files"]
+        self.input_dir  = get_root_dir() / self.base_config["paths"]["processed_data"]
+        self.output_dir = get_root_dir() / self.base_config["paths"]["chunk_files"]
         self.chunk_sizes = self.rag_config["preprocessing"].get("chunk_sizes", [100, 400])
-        self.overlap = self.rag_config["preprocessing"].get("overlap", 20)
+        self.overlap = self.rag_config["preprocessing"].get("overlap", 5)
 
         self.logger = get_logger(self.__class__.__name__)
 

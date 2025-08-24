@@ -18,6 +18,10 @@ Example:
 import os
 import yaml
 
+from pathlib import Path
+
+def get_root_dir():
+    return Path(__file__).parent.parent.parent
 
 def load_config(config_path: str) -> dict:
     """

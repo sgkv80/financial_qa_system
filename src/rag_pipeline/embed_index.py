@@ -10,7 +10,7 @@ import json
 from sentence_transformers import SentenceTransformer
 import faiss
 from utils.logger import get_logger
-from utils.config_loader import load_config
+from utils.config_loader import load_config, get_root_dir
 
 
 class EmbedIndex:
@@ -20,8 +20,10 @@ class EmbedIndex:
 
     def __init__(self, rag_config_path: str = "configs/rag_config.yaml",
                  base_config_path: str = "configs/base_config.yaml"):
+        
         self.rag_config = load_config(rag_config_path)
         self.base_config = load_config(base_config_path)
+        
         self.logger = get_logger(self.__class__.__name__)
 
         self.embedding_model_name = self.rag_config["embedding"]["model_name"]

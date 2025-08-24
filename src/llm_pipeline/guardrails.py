@@ -5,7 +5,7 @@ Generic guardrails implementation that can be used in RAG and Fine-Tuning pipeli
 """
 
 from utils.logger import get_logger
-from utils.config_loader import load_config
+from utils.config_loader import load_config, get_root_dir
 
 class Guardrails:
     """
@@ -16,7 +16,8 @@ class Guardrails:
         """
         Initialize Guardrails with optional banned keywords.
         """
-        self.gaurdrail_config = load_config(r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\gaurdrail_config.yaml') #TODO
+        guardrail_config_path = get_root_dir() / 'configs/gaurdrail_config.yaml'
+        self.gaurdrail_config = load_config(guardrail_config_path)
         self.logger = get_logger(self.__class__.__name__)
         self.banned_keywords = banned_keywords or ["hack", "attack", "exploit"]
 

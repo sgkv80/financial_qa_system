@@ -5,9 +5,9 @@ import pandas as pd
 import streamlit as st
 
 from utils.logger import get_logger
-from utils.config_loader import load_config
+from utils.config_loader import load_config, get_root_dir
 from rag_pipeline.pipeline import RAGPipeline
-from finetune_pipeline.pipeline import FineTunePipeline
+#from finetune_pipeline.pipeline import FineTunePipeline
 from components import UIComponents
 
 
@@ -16,10 +16,13 @@ class FinancialQAApp:
     Main Streamlit application for the Financial QA System.
     Supports both RAG and Fine-Tuning pipelines with lazy loading.
     """
+    base_config_path     = get_root_dir() / 'configs' / 'app_config.yaml'
+    rag_config_path      = get_root_dir() / 'configs' / 'rag_config.yaml'
+    finetune_config_path = get_root_dir() / 'configs' / 'finetune_config.yaml'
 
-    base_config_path     = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\app_config.yaml'
-    rag_config_path      = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\rag_config.yaml'
-    finetune_config_path = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\finetune_config.yaml'
+    # base_config_path     = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\app_config.yaml'
+    # rag_config_path      = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\rag_config.yaml'
+    # finetune_config_path = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\finetune_config.yaml'
 
     def __init__(self):
         self.logger = get_logger(self.__class__.__name__)
@@ -41,15 +44,15 @@ class FinancialQAApp:
         if "rag_pipeline" not in st.session_state:
             with st.spinner("Initializing RAG pipeline..."):
                 rag = RAGPipeline(rag_config_path=FinancialQAApp.rag_config_path, base_config_path=FinancialQAApp.base_config_path)
-                rag.setup(force_rebuild=False)
+                rag.setup(force_rebuild=True)
                 st.session_state["rag_pipeline"] = rag
         return st.session_state["rag_pipeline"]
 
     @staticmethod
-    def get_ft_pipeline() -> FineTunePipeline:
+    def get_ft_pipeline() -> RAGPipeline:
         if "ft_pipeline" not in st.session_state:
             with st.spinner("Initializing Fine-Tuning pipeline..."):
-                ft = FineTunePipeline(finetune_config_path = FinancialQAApp.finetune_config_path, base_config_path=FinancialQAApp.base_config_path)
+                ft = RAGPipeline(finetune_config_path = FinancialQAApp.finetune_config_path, base_config_path=FinancialQAApp.base_config_path)
                 st.session_state["ft_pipeline"] = ft
         return st.session_state["ft_pipeline"]
 
@@ -106,7 +109,7 @@ class FinancialQAApp:
             self.logger.error("Query failed:\n" + traceback.format_exc())
             answer = "⚠️ Error while answering. See logs."
         elapsed = time.perf_counter() - start
-        return answer, elapsed
+        return answer[0], answer[1], elapsed #answer, confidence score, time
 
     def evaluate_methods(self, qa_items):
         rows = []
@@ -149,8 +152,8 @@ class FinancialQAApp:
             query, submitted = self.ui.query_form()
             if submitted and query.strip():
                 with st.spinner("Processing your query…"):
-                    answer, elapsed = self.run_single_query(query, method)
-                    confidence = self.heuristic_confidence(answer)
+                    answer, confidence, elapsed = self.run_single_query(query, method)
+                    confidence = self.heuristic_confidence(answer) #TODO we are sending confidence also
                     self.ui.show_result_card(answer, confidence, elapsed)
 
         # Tab 2

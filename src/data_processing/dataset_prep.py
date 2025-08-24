@@ -7,7 +7,7 @@ Prepares Q&A data for fine-tuning models using config-defined paths.
 import os
 import json
 from utils.logger import get_logger
-from utils.config_loader import load_config
+from utils.config_loader import load_config, get_root_dir
 
 logger = get_logger(__name__)
 CONFIG = load_config("configs/base_config.yaml")

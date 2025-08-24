@@ -6,7 +6,7 @@ Module for response generation using a small generative model.
 from transformers import AutoTokenizer  # Import tokenizer
 from transformers import pipeline
 from utils.logger import get_logger
-from utils.config_loader import load_config
+from utils.config_loader import load_config, get_root_dir
 from difflib import SequenceMatcher
 import re
 import os
@@ -25,7 +25,8 @@ class Generator:
         self.max_length = max_length
         self.logger.info(f"Loaded generation model: {model_name}")
         
-        qa_dataset_file = self.base_config["paths"]["qa_dataset"]
+        qa_dataset_file = get_root_dir() / self.base_config["paths"]["qa_dataset"]
+        
         with open(qa_dataset_file, "r", encoding="utf-8") as f:
             self.qa_pairs = json.load(f)
 

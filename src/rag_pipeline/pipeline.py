@@ -21,7 +21,7 @@ import json
 from typing import Dict, List
 
 from llm_pipeline.base_qa_system import BaseQASystem
-from utils.config_loader import load_config
+from utils.config_loader import load_config, get_root_dir
 from utils.logger import get_logger
 
 # Processing & pipeline modules
@@ -62,9 +62,9 @@ class RAGPipeline(BaseQASystem):
         self.base_config = load_config(base_config_path)
 
         # Paths
-        self.processed_dir = self.base_config["paths"]["processed_data"]
-        self.chunks_dir    = self.base_config["paths"]["chunk_files"]
-        self.emb_dir = self.base_config["paths"]["embeddings"]
+        self.processed_dir = get_root_dir() / self.base_config["paths"]["processed_data"]
+        self.chunks_dir    = get_root_dir() / self.base_config["paths"]["chunk_files"]
+        self.emb_dir       = get_root_dir() / self.base_config["paths"]["embeddings"]
         os.makedirs(self.emb_dir, exist_ok=True)
 
         # Chunking params
@@ -116,7 +116,7 @@ class RAGPipeline(BaseQASystem):
             Preprocessor(self.base_config_path).preprocess_pdfs()
             return
 
-        processed_dir = self.base_config["paths"]["processed_data"]
+        processed_dir = get_root_dir() / self.base_config["paths"]["processed_data"]
         os.makedirs(processed_dir, exist_ok=True)
 
         # Check if processed folder has any text files

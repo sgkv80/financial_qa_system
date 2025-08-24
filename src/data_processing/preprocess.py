@@ -14,7 +14,7 @@ import pytesseract  # For OCR on images
 import PyPDF2  # For extracting text from PDF files
 
 from utils.logger import get_logger
-from utils.config_loader import load_config
+from utils.config_loader import load_config, get_root_dir
 
 from collections import Counter
 from typing import List, Tuple, Dict  # For type annotations
@@ -29,8 +29,8 @@ class Preprocessor:
         Initialize Preprocessor with configurations.
         """
         self.config = load_config(base_config_path)
-        self.input_dir = self.config["paths"]["raw_data"]
-        self.output_file = self.config["paths"]["processed_data"]
+        self.input_dir   = get_root_dir() / self.config["paths"]["raw_data"]
+        self.output_dir  = get_root_dir() / self.config["paths"]["processed_data"]
         self.logger = get_logger(self.__class__.__name__)
 
 
@@ -205,7 +205,7 @@ class Preprocessor:
         """
         Process all PDFs from raw_data directory, clean, and save as a single corpus.
         """
-        os.makedirs(os.path.dirname(self.output_file), exist_ok=True)
+        os.makedirs(os.path.dirname(self.output_dir), exist_ok=True)
         combined_text = ""
 
         self.logger.info(f"Preprocessing PDFs in directory: {self.input_dir}")
@@ -220,10 +220,10 @@ class Preprocessor:
                 
                 segment_sections  = self.extract_segment_sections(cleaned_text)
 
-                with open(os.path.join(self.output_file, f'{pdf_base_name}.clean_text'), "w", encoding="utf-8") as f:
+                with open(os.path.join(self.output_dir, f'{pdf_base_name}.clean_text'), "w", encoding="utf-8") as f:
                     f.write(cleaned_text)
 
-                with open(os.path.join(self.output_file, f'{pdf_base_name}.segment_sections'), "w", encoding="utf-8") as json_file:
+                with open(os.path.join(self.output_dir, f'{pdf_base_name}.segment_sections'), "w", encoding="utf-8") as json_file:
                     json.dump(segment_sections, json_file, indent=4)
 
                 self.logger.info(f"Processed {filename}")
