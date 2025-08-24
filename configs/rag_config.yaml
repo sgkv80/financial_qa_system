@@ -2,7 +2,7 @@
 
 preprocessing:
   chunk_sizes: [100, 400]      # Token chunk sizes for retrieval
-  overlap: 20                  # Token overlap between chunks
+  overlap: 10                   # Token overlap between chunks
   lower_case: true
   remove_stopwords: true
 

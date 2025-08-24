@@ -56,7 +56,7 @@ class Chunker:
                     'chunk_to'   : end,
                     'chunk_size': chunk_size,  # Chunk size
                     #TODO 'section': self.sections.get(str(doc_id), None) if hasattr(self, 'sections') else None  # Section info
-                    'section': sections  
+                    'section': None #sections  
                 }
                 chunks.append({'id': f'chunk_{doc_id}_{chunk_size}_{chunk_id}', 'text': chunk_text, 'metadata': metadata})  # Add chunk
 

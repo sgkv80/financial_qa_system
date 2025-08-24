@@ -40,10 +40,11 @@ venv.bak/
 .ipynb_checkpoints
 
 # Data files
-data/raw/*.pdf
-data/raw/*.xlsx
-data/raw/*.csv
-data/processed/
+#data/chunks/chunks_100.json
+#data/raw/*.pdf
+#data/raw/*.xlsx
+#data/raw/*.csv
+#data/processed/
 *.pkl
 *.joblib
 

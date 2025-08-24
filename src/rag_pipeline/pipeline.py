@@ -210,8 +210,8 @@ class RAGPipeline(BaseQASystem):
                 h["chunk_size"] = size  # keep source size
             candidates.extend(hits)
 
-        #TODO remove hardcoding
-        with open(os.path.join(r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\logs', 'hybrid_retrieval_chunks.json'), "w", encoding="utf-8") as json_file:
+        hybrid_retrieval_chunks_log = get_root_dir() / 'logs/hybrid_retrieval_chunks.json'
+        with open(hybrid_retrieval_chunks_log, "w", encoding="utf-8") as json_file:
             json.dump(candidates, json_file, indent=4)
 
         

@@ -9,6 +9,8 @@ import os, io
 import re
 import json
 
+from .enhanced_text_cleaner import TextCleaner
+
 from pdf2image import convert_from_path
 import pytesseract  # For OCR on images
 import PyPDF2  # For extracting text from PDF files
@@ -32,6 +34,8 @@ class Preprocessor:
         self.input_dir   = get_root_dir() / self.config["paths"]["raw_data"]
         self.output_dir  = get_root_dir() / self.config["paths"]["processed_data"]
         self.logger = get_logger(self.__class__.__name__)
+
+        self.text_cleaner = TextCleaner()
 
 
     def extract_text_from_pdf(self, pdf_path: str) -> str:
@@ -63,21 +67,6 @@ class Preprocessor:
 
 
 
-    # def extract_text_from_pdf_(self, pdf_path: str) -> str:
-    #     """
-    #     Extract raw text from a single PDF file.
-    #     """
-    #     if not os.path.exists(pdf_path):
-    #         self.logger.error(f"File not found: {pdf_path}")
-    #         raise FileNotFoundError(f"File not found: {pdf_path}")
-
-    #     text = ""
-    #     with fitz.open(pdf_path) as doc:
-    #         for page in doc:
-    #             text += page.get_text()
-    #     self.logger.info(f"Extracted text from {pdf_path}")
-    #     return text
-
     def clean_text(self, text: str) -> str:
         """
         Clean extracted text by removing unwanted formatting.
@@ -91,64 +80,6 @@ class Preprocessor:
 
 
 
-    # def clean_text(self, text: str) -> str:
-    #     """
-    #     Clean extracted text by removing unwanted formatting, headers, footers, and page numbers.
-    #     """
-    #     # 1. Split the text into pages or logical chunks
-    #     # Assuming pages are separated by multiple newlines or a specific pattern
-    #     pages = re.split(r'\n\s*\n', text)
-        
-    #     if not pages:
-    #         self.logger.warning("No pages found in text. Cleaning raw string only.")
-    #         cleaned_text = re.sub(r"(\bPage\s+\d+\b|\b\d+\s+of\s+\d+\b)", "", text, flags=re.IGNORECASE)
-    #         cleaned_text = re.sub(r"\s+", " ", cleaned_text)
-    #         return cleaned_text.strip()
-        
-    #     # 2. Identify potential headers and footers by their frequency
-    #     header_candidates = Counter()
-    #     footer_candidates = Counter()
-
-    #     for page in pages:
-    #         lines = page.strip().split('\n')
-    #         if len(lines) > 0:
-    #             header_candidates[lines[0].strip()] += 1
-    #         if len(lines) > 1:
-    #             footer_candidates[lines[-1].strip()] += 1
-
-    #     # Heuristic: A string appearing on more than a set number of pages is likely a header/footer
-    #     num_pages = len(pages)
-    #     header_to_remove = [h for h, count in header_candidates.items() if count > num_pages * 0.5]
-    #     footer_to_remove = [f for f, count in footer_candidates.items() if count > num_pages * 0.5]
-
-    #     # 3. Clean each page
-    #     cleaned_pages = []
-    #     for page in pages:
-    #         lines = page.strip().split('\n')
-            
-    #         # Remove identified headers
-    #         if len(lines) > 0 and lines[0].strip() in header_to_remove:
-    #             lines = lines[1:]
-            
-    #         # Remove identified footers
-    #         if len(lines) > 0 and lines[-1].strip() in footer_to_remove:
-    #             lines = lines[:-1]
-            
-    #         page_content = '\n'.join(lines)
-            
-    #         # 4. Remove page number patterns (more general than just "Page \d+")
-    #         # This handles patterns like "Page 1", "1 of 10", or just "1" at the start/end of a line
-    #         page_content = re.sub(r"(\bPage\s+\d+\b|\b\d+\s+of\s+\d+\b|\b\d+\b)", "", page_content, flags=re.IGNORECASE)
-            
-    #         cleaned_pages.append(page_content)
-        
-    #     # 5. Join cleaned pages and finalize cleaning
-    #     cleaned_text = "\n".join(cleaned_pages)
-    #     cleaned_text = re.sub(r"\n+", "\n", cleaned_text)
-    #     cleaned_text = re.sub(r"\s+", " ", cleaned_text)
-        
-    #     self.logger.debug("Text cleaned successfully, including headers, footers, and page numbers.")
-    #     return cleaned_text.strip()
 
     
     def extract_segment_sections(self, text: str) -> Dict[str, str]:
@@ -216,7 +147,7 @@ class Preprocessor:
                 pdf_base_name = os.path.splitext(filename)[0]
 
                 raw_text = self.extract_text_from_pdf(pdf_path)
-                cleaned_text = self.clean_text(raw_text)
+                cleaned_text = self.text_cleaner.process(raw_text) #self.clean_text(raw_text)
                 
                 segment_sections  = self.extract_segment_sections(cleaned_text)
 

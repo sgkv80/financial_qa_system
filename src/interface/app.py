@@ -49,10 +49,11 @@ class FinancialQAApp:
         return st.session_state["rag_pipeline"]
 
     @staticmethod
-    def get_ft_pipeline() -> RAGPipeline:
+    def get_ft_pipeline() -> RAGPipeline: #TODO
         if "ft_pipeline" not in st.session_state:
             with st.spinner("Initializing Fine-Tuning pipeline..."):
-                ft = RAGPipeline(finetune_config_path = FinancialQAApp.finetune_config_path, base_config_path=FinancialQAApp.base_config_path)
+                #ft = FineTunePipeline(finetune_config_path = FinancialQAApp.finetune_config_path, base_config_path=FinancialQAApp.base_config_path)
+                ft = None 
                 st.session_state["ft_pipeline"] = ft
         return st.session_state["ft_pipeline"]
 
@@ -76,22 +77,46 @@ class FinancialQAApp:
 
     @staticmethod
     def load_eval_qa_pairs(max_items: int = 10):
-        try:
-            ft_cfg = load_config("configs/finetune_config.yaml")
-            qa_path = ft_cfg["data"]["qa_json"]
-            if os.path.exists(qa_path):
-                import json
-                with open(qa_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                return data[:max_items]
-        except Exception:
-            pass
+        # try:
+        #     ft_cfg = load_config("configs/finetune_config.yaml")
+        #     qa_path = ft_cfg["data"]["qa_json"]
+        #     if os.path.exists(qa_path):
+        #         import json
+        #         with open(qa_path, "r", encoding="utf-8") as f:
+        #             data = json.load(f)
+        #         return data[:max_items]
+        # except Exception:
+        #     pass
+        test_questions = [
+            "What was Amazon's net income in 2023?",  # high-confidence
+            "What was the change in cash flow in 2024?",  # ambiguous
+            "What is the capital of France?",  # irrelevant
+            "What was the total revenue in 2023?",
+            "What was the total revenue in 2024?",
+            "What were general and administrative expenses in 2023?",
+            "What was the operating income in 2024?",
+            "What was the net sales in 2023?",
+            "What was the cash flow in 2023?",
+            "What was the total assets in 2024?"
+        ]
+        ground_truth = {
+            "What was Amazon's net income in 2023?": "$33 million",
+            "What was the change in cash flow in 2024?": "$642 million",
+            "What is the capital of France?": "Irrelevant query",
+            "What was the total revenue in 2023?": "$123 million",
+            "What was the total revenue in 2024?": "$123 million",
+            "What were general and administrative expenses in 2023?": "$50 million",
+            "What was the operating income in 2024?": "$80 million",
+            "What was the net sales in 2023?": "$200 million",
+            "What was the cash flow in 2023?": "$75 million",
+            "What was the total assets in 2024?": "$500 million"
+        }
+
         return [
-            {"Q": "What were Amazon’s consolidated net sales in 2024?",
-             "A": "$637,959 million ($637.959 billion)"},
-            {"Q": "What were Amazon’s consolidated net sales in 2023?",
-             "A": "$574,785 million ($574.785 billion)"},
-        ][:max_items]
+            {"Q": Q,
+             "A": ground_truth.get(Q)}
+            for Q, A in zip(test_questions, ground_truth)
+        ]
 
     # ----------------------
     # Core Logic
@@ -103,7 +128,7 @@ class FinancialQAApp:
                 pipeline = self.get_rag_pipeline()
                 answer = pipeline.safe_answer(query)
             else:
-                pipeline = self.get_ft_pipeline()
+                pipeline = self.get_rag_pipeline() #TODO change to get_ft_pileline()
                 answer = pipeline.safe_answer(query)
         except Exception:
             self.logger.error("Query failed:\n" + traceback.format_exc())
@@ -112,6 +137,7 @@ class FinancialQAApp:
         return answer[0], answer[1], elapsed #answer, confidence score, time
 
     def evaluate_methods(self, qa_items):
+        #TODO calling rag pipeline for both replace with get_ft_pipeline
         rows = []
         _ = self.get_rag_pipeline()
         _ = self.get_ft_pipeline()
@@ -120,9 +146,9 @@ class FinancialQAApp:
             q, gt = item["Q"], item["A"]
             for method in ("RAG", "Fine-Tuning"):
                 with st.spinner(f"Evaluating {method}…"):
-                    ans, t = self.run_single_query(q, method)
+                    ans, conf, t = self.run_single_query(q, method)
                     conf = self.similarity_confidence(ans, gt)
-                    correct = "Y" if conf >= 0.60 else "N"
+                    correct = "Y" if conf >= 0.70 else "N"
                     rows.append({
                         "question": q,
                         "ground-truth": gt,
