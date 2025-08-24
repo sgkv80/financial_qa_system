@@ -15,8 +15,9 @@ class UIComponents:
 
     @staticmethod
     def show_contributors_table(contributors: List[Dict[str, str]]):
-        st.subheader("Contributors")
-        df = pd.DataFrame(contributors, columns=["Name", "BITS id"])
+        st.subheader("Conversational AI : Group 81")
+        df = pd.DataFrame(contributors, columns=["Name", "BITS ID"])
+        df.index = df.index + 1
         st.table(df)
 
     @staticmethod

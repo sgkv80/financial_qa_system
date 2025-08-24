@@ -124,7 +124,7 @@ class FinancialQAApp:
                 pipeline = self.get_rag_pipeline()
                 answer = pipeline.safe_answer(query)
             else:
-                pipeline = self.get_ft_pileline()
+                pipeline = self.get_ft_pipeline()
                 answer = pipeline.safe_answer(query)
         except Exception:
             self.logger.error("Query failed:\n" + traceback.format_exc())
