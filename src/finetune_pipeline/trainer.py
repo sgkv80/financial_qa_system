@@ -8,7 +8,8 @@ Now includes perplexity evaluation, save/load methods.
 import os
 import torch
 from torch.utils.data import Dataset, DataLoader
-from transformers import AdamW, AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from torch.optim import AdamW
 from utils.logger import get_logger
 import math
 

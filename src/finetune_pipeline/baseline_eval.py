@@ -19,6 +19,10 @@ class BaselineEvaluator:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = AutoModelForCausalLM.from_pretrained(model_name).to(self.device)
 
+        # Explicitly set the pad token to the end-of-sentence token
+        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.model.config.pad_token_id = self.model.config.eos_token_id
+
     def evaluate(self, qa_pairs, max_new_tokens=50):
         """
         Evaluate baseline outputs and compute BLEU & ROUGE-L.
@@ -28,12 +32,13 @@ class BaselineEvaluator:
         results = []
 
         for item in qa_pairs:
-            prompt = item["Q"]
-            ref_answer = item["A"]
+
+            prompt = item['Q']
+            ref_answer = item['A']
 
             inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
             with torch.no_grad():
-                output_ids = self.model.generate(**inputs, max_new_tokens=max_new_tokens)
+                output_ids = self.model.generate(**inputs, max_new_tokens=max_new_tokens, pad_token_id=self.tokenizer.eos_token_id)
             pred = self.tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
             # Compute metrics

@@ -1,13 +1,13 @@
 # Fine-tuning pipeline configuration
 
 dataset:
-  qa_file: "data/raw/qa_pairs.json"
+  qa_file: "data/qna/qa_pairs.json"
   train_split: 0.8
   validation_split: 0.1
   test_split: 0.1
 
 model:
-  base_model: "distilbert-base-uncased"
+  base_model: "distilgpt2"
   save_path: "models/finetuned/"
   device: "cuda"
 

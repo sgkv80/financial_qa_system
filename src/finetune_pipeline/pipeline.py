@@ -5,7 +5,7 @@ Orchestrates the full fine-tuning pipeline using configs and logging.
 """
 
 import json
-from utils.config_loader import load_config
+from utils.config_loader import load_config, get_root_dir
 from utils.logger import get_logger
 from llm_pipeline.base_qa_system import BaseQASystem
 from .baseline_eval import BaselineEvaluator
@@ -29,21 +29,22 @@ class FineTunePipeline(BaseQASystem):
         
         # Keep both configs handy
         self.finetune_config = load_config(finetune_config_path)
-        self.base_config = load_config(base_config_path)
+        self.base_config     = load_config(base_config_path)
 
-        self.qa_dataset_file = self.base_config["paths"]["qa_dataset"]
+        self.qa_dataset_file = get_root_dir() /  self.base_config["paths"]["qa_dataset"]
 
         # Initialize components
-        self.evaluator = BaselineEvaluator(model_name=self.finetune_config["model"]["name"])
-        self.fine_tuner = InstructionFineTuner(model_name=self.finetune_config["model"]["name"])
+        self.evaluator = BaselineEvaluator(model_name=self.finetune_config["model"]["base_model"])
+        self.fine_tuner = InstructionFineTuner(model_name=self.finetune_config["model"]["base_model"])
 
     def load_data(self):
         """
         Load Q&A data from JSON file.
         """
-        self.logger.info(f"Loading Q&A dataset from {self.qa_file}")
-        with open(self.qa_file, "r") as f:
+        self.logger.info(f"Loading Q&A dataset from {self.qa_dataset_file}")
+        with open(self.qa_dataset_file, "r",  encoding='utf-8') as f:
             qa_pairs = json.load(f)
+        
         return qa_pairs
 
     def run(self):
@@ -54,7 +55,7 @@ class FineTunePipeline(BaseQASystem):
         prompts = [item["Q"] for item in qa_pairs]
 
         # Baseline evaluation
-        baseline_results = self.evaluator.evaluate(prompts)
+        baseline_results = self.evaluator.evaluate(qa_pairs)
         self.logger.info(f"Baseline evaluation complete on {len(prompts)} prompts.")
 
         # Fine-tuning

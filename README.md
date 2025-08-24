@@ -1,12 +1,46 @@
-# Financial QA System: RAG vs Fine-Tuning Comparison
+# Financial QA System: RAG vs Fine-Tuning  
 
-A comprehensive comparison between Retrieval-Augmented Generation (RAG) and Fine-Tuning approaches for financial question-answering systems.
+A comparative study between **Retrieval-Augmented Generation (RAG)** and **Fine-Tuning** approaches for building financial question-answering systems.
 
-## 🎯 Objective
+---
 
-Develop and compare two systems for answering questions based on company financial statements:
-- **RAG Chatbot**: Combines document retrieval and generative response
-- **Fine-Tuned Model**: Directly fine-tunes a language model on financial Q&A data
+## Objective
+Develop and evaluate two approaches for answering questions based on financial reports:
+- **RAG Chatbot** → Combines document retrieval with generative models  
+- **Fine-Tuned Model** → Directly fine-tuned on financial Q&A data  
+
+---
+
+## Architecture Overview  
+
+### RAG Chatbot Workflow
+```mermaid
+flowchart RAG:-
+---------------
+
+        User Query
+             &downarrow;
+Retriever: Dense + Sparse Index
+             &downarrow;
+          Reranker
+             &downarrow;
+        Relevant Chunks
+             &downarrow;
+        LLM Generator
+             &downarrow;
+        Final Answer
+```
+### Fine-Tuned Model Workflow
+```mermaid
+
+flowchart FT:-
+--------------
+    User Query
+         &downarrow;
+    Fine-Tuned LLM
+         &downarrow;
+    Direct Answer
+```
 
 ## 🏗️ Project Structure
 
@@ -15,16 +49,18 @@ financial_qa_system/
 │
 ├── configs/                     # Centralized configs (no hardcoding)
 │   ├── app_config.yaml          # Global settings (paths, logging level, etc.)
+│   ├── finetune_config.yaml     # Fine-tuning configs
 │   ├── gaurdrail_config.yaml    # invalid words etc
-│   ├── rag_config.yaml          # RAG-specific configs
-│   └── finetune_config.yaml     # Fine-tuning configs
+│   ├── logging_config.yaml      # logging configs
+│   └── rag_config.yaml          # RAG-specific configs
 │
 ├── data/
 │   ├── raw/                     # Original raw data (PDFs, JSON Q&A)
 │   │   ├── amazon_2023.pdf
 │   │   ├── amazon_2024.pdf
 │   │   └── qa_pairs.json
-│   ├── qa/                      # qa created for fine tuning
+│   ├── qna/                     # qna created for fine tuning
+│   │   ├── amazon_qa_dataset.json
 │   ├── processed/               # Processed data (cleaned text)
 │   ├── chunks/                  # chunks from processed text
 │   └── embeddings/              # Vector stores (FAISS, ChromaDB)
@@ -35,8 +71,6 @@ financial_qa_system/
 ├── models/
 │   ├── rag/                     # Saved RAG pipeline models
 │   └── finetuned/               # Saved fine-tuned models
-│
-├── notebooks/                   # Exploration notebooks
 │
 ├── src/
 │   ├── __init__.py
@@ -49,7 +83,8 @@ financial_qa_system/
 │   ├── data_processing/         # All data-related processing
 │   │   ├── preprocess.py        # Cleaning, text extraction
 │   │   ├── chunking.py          # Split into chunks
-│   │   └── dataset_prep.py      # Prepare Q&A dataset for FT
+│   │   ├── dataset_prep.py      # Prepare Q&A dataset for FT
+│   │   └── enhanced_text_cleaner.py # text cleaning utility
 │   │
 │   ├── llm_pipeline/            # common classes required for RAG and FineTuning
 │   │   ├── base_qa_system.py    # Base class for RAGPipeline and FineTunePineline
@@ -66,6 +101,7 @@ financial_qa_system/
 │   │   ├── baseline_eval.py     # Pre-fine-tuning benchmarking
 │   │   ├── trainer.py           # Fine-tuning loop
 │   │   ├── instruction_ft.py    # Supervised Instruction Fine-tuning
+│   │   ├── pipeline.py          # Fine-tuning pipeline setup, safe_answer
 │   │   └── guardrails.py        # Fine-tuning guardrail
 │   │
 │   ├── interface/               # Frontend/UI
@@ -80,11 +116,9 @@ financial_qa_system/
     ├── test_rag.py              # Unit tests for RAG modules
     ├── test_finetune.py         # Unit tests for fine-tuning
     └── test_interface.py        # UI and integration tests
-
-
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 1. **Setup Environment**
    ```bash
@@ -97,23 +131,14 @@ financial_qa_system/
    - Place your financial reports in `data/raw/`
    - Ensure Q&A pairs are in `data/qa/qa_pairs.json`
 
-3. **Configure System**
+4. **Launch Interface**
    ```bash
-   cp .env.example .env
-   # Edit .env and config files as needed
+   >>> cd ~/financial_qa_system
+   >>> export PYTHONPATH=$PYTHONPATH:$(pwd)/src
+   >>> streamlit run src/interface/streamlit_app.py
    ```
 
-4. **Run Setup**
-   ```bash
-   python scripts/setup_environment.py
-   ```
-
-5. **Launch Interface**
-   ```bash
-   streamlit run src/interface/streamlit_app.py
-   ```
-
-## 📊 Features
+## Features
 
 ### RAG System
 - **Multi-stage Retrieval**: Dense + Sparse hybrid retrieval with re-ranking
@@ -133,67 +158,98 @@ financial_qa_system/
 - **Statistical Analysis**: Detailed performance comparison
 - **Visualization**: Interactive results dashboard
 
-## 🔧 Configuration
+## Configuration
 
-Key configuration files:
-- `config/config.yaml` - Main system configuration
-- `config/rag_config.yaml` - RAG-specific settings
-- `config/finetuning_config.yaml` - Fine-tuning parameters
-- `config/logging_config.yaml` - Logging configuration
+- app_config.yaml - Application configuration
+   * Central entrypoint for project settings
+   * Defines data/model/log paths 
+   * Controls default UI type (Streamlit/Gradio/CLI)
+  ```mermaid
+  project:
+    name: "Financial QA System"
+    seed: 42
+    log_level: "INFO"
+  paths:
+    raw_data: "data/raw/"
+    qa_dataset: "data/qna/amazon_qa_dataset.json"
+    processed_data: "data/processed/"
+    chunk_files: "data/chunks"
+    embeddings: "data/embeddings/"
+    models: "models/"
+    logs: "logs/system.log"
+  interface:
+    type: "streamlit"
+    default_mode: "rag"
+  ```
+- finetune_config.yaml - Fine-tuning parameters
+  * Defines dataset splits for training/validation/testing
+  * Sets model & training hyperparameters
+  * Enables instruction-style fine-tuning
+  * Controls logging & guardrails during training
+  ```mermaid
+  dataset:
+    qa_file: "data/raw/qa_pairs.json"
+    train_split: 0.8
+    validation_split: 0.1
+    test_split: 0.1
+  model:
+    base_model: "distilbert-base-uncased"
+    save_path: "models/finetuned/"
+    device: "cuda"
+  training:
+    epochs: 5
+    batch_size: 16
+    learning_rate: 5e-5
+    optimizer: "adamw"
+    warmup_steps: 100
+    weight_decay: 0.01
+  instruction_ft:
+    enabled: true
+    format: "instruction"
+  ```
+- gaurdrail_config.yaml
+  * Rejects irrelevant questions (e.g., weather, sports, trivia)
+  * Ensures Query and Answer remains focused on financial domain
+  * new word tokens can be added to this file.
+  ```mermaid
+  irrelevant_keywords:
+   - 'capital of france'
+   - 'weather'
+   - 'sports'
+   - 'recipe'
+   - 'movie'
+  ...
+  ```
+- rag_config.yaml - RAG-specific settings
+  * Controls preprocessing (chunking size & overlap)
+  * Defines embedding model & vector index type (FAISS/BM25)
+  * Configures retrieval fusion (dense+sparse weighting)
+  * Enables reranking with cross-encoder
+  * Specifies generator model and output length
 
-## 📈 Usage Examples
-
-### Programmatic Usage
-```python
-from src.rag_system.rag_pipeline import RAGPipeline
-from src.finetuning_system.finetuning_pipeline import FineTuningPipeline
-
-# Initialize systems
-rag_system = RAGPipeline(config)
-ft_system = FineTuningPipeline(config)
-
-# Ask questions
-rag_answer = rag_system.answer_question("What was Amazon's revenue in 2023?")
-ft_answer = ft_system.answer_question("What was Amazon's revenue in 2023?")
-```
-
-### Command Line Interface
-```bash
-# Run evaluation
-python scripts/run_evaluation.py --config config/config.yaml
-
-# Train fine-tuned model
-python scripts/train_finetuned_model.py --epochs 5 --lr 5e-5
-```
-
-## 🧪 Testing
-
-Run the test suite:
-```bash
-pytest tests/ -v --cov=src
-```
-
-## 📝 Results
-
-Results are automatically saved to:
-- `results/rag_results/` - RAG system performance
-- `results/finetuning_results/` - Fine-tuning performance  
-- `results/comparison_results/` - Comparative analysis
-- `results/reports/` - Generated reports
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and ensure code quality
-5. Submit a pull request
-
-## 📄 License
-
-
-## 🔗 References
-
-- [RAG Paper](https://arxiv.org/abs/2005.11401)
-- [Fine-tuning Best Practices](https://huggingface.co/docs/transformers/training)
-- [Financial NLP Resources](https://github.com/topics/financial-nlp)
+  ```mermaid
+  preprocessing:
+    chunk_sizes: [100, 400]
+    overlap: 10
+  embedding:
+    model_name: "intfloat/e5-small-v2"
+    embedding_dim: 384
+    device: "cpu"
+  indexing:
+    dense_store: "faiss"
+    sparse_store: "bm25"
+    top_k_dense: 5
+    top_k_sparse: 5
+  retrieval:
+    fusion_method: "weighted"
+    fusion_weight_dense: 0.6
+    fusion_weight_sparse: 0.4
+  reranker:
+    enabled: true
+    model_name: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+    top_k: 3
+  generator:
+    model_name: "distilgpt2"
+    max_input_tokens: 1024
+    max_output_tokens: 128
+  ```
