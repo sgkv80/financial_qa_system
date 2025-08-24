@@ -14,5 +14,5 @@ from src.rag_pipeline.pipeline import RAGPipeline
 
 
 rag = RAGPipeline()
-rag.setup()
+rag.setup(force_rebuild=False)
 print(rag.safe_answer("What is the revenue in 2023"))

@@ -56,9 +56,11 @@ class RAGPipeline(BaseQASystem):
         base_config_path: str = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\app_config.yaml'
 
     ):
-        super().__init__(rag_config_path)
+        super().__init__(base_config_path, rag_config_path)
         self.logger = get_logger(self.__class__.__name__)
 
+        self.base_config_path = base_config_path
+        self.rag_config_path  =  rag_config_path
         # Keep both configs handy
         self.rag_config = load_config(rag_config_path)
         self.base_config = load_config(base_config_path)
@@ -102,17 +104,22 @@ class RAGPipeline(BaseQASystem):
         Run end-to-end data readiness: preprocess -> chunk -> build/load indices.
         Idempotent: will reuse existing artifacts unless force_rebuild=True.
         """
-        self._ensure_preprocessed()
-        self._ensure_chunked()
+        self._ensure_preprocessed(force_rebuild)
+        self._ensure_chunked(force_rebuild)
         self._ensure_indices(force_rebuild)
         self._ensure_retrievers()
 
    
-    def _ensure_preprocessed(self) -> None:
+    def _ensure_preprocessed(self, force_rebuild: bool = False) -> None:
         """
         Ensure that preprocessed text files exist in processed_data/.
         If processed_data/ is empty, run Preprocessor to generate them.
         """
+        if force_rebuild:
+            self.logger.info("Force_rebuild. Running preprocessing...")
+            Preprocessor(self.base_config_path).preprocess_pdfs()
+            return
+
         processed_dir = self.base_config["paths"]["processed_data"]
         os.makedirs(processed_dir, exist_ok=True)
 
@@ -128,8 +135,14 @@ class RAGPipeline(BaseQASystem):
         Preprocessor(self.base_config_path).preprocess_pdfs()
     
     
-    def _ensure_chunked(self) -> None:
+    def _ensure_chunked(self, force_rebuild: bool = False) -> None:
         # Chunker writes chunks_{size}.json into processed_data
+
+        if force_rebuild:
+            self.logger.info("Force_rebuild. Running chunking...")
+            Chunker(self.base_config_path, self.rag_config_path).create_chunks()
+            return
+
         incomplete = []
         for size in self.chunk_sizes:
             out = os.path.join(self.chunks_dir, f"chunks_{size}.json")
@@ -140,7 +153,7 @@ class RAGPipeline(BaseQASystem):
             return
 
         self.logger.info(f"Missing chunk files for sizes: {incomplete}. Running chunking...")
-        Chunker(self.base_config, self.rag_config).create_chunks()
+        Chunker(self.base_config_path, self.rag_config_path).create_chunks()
 
     def _ensure_indices(self, force_rebuild: bool) -> None:
         for size in self.chunk_sizes:
@@ -180,7 +193,7 @@ class RAGPipeline(BaseQASystem):
 
     # ---------- Core QA ----------
 
-    def answer(self, query: str) -> str:
+    def answer(self, processed_query: str) -> tuple:
         """
         Generate an answer using: hybrid retrieval -> (optional) rerank -> generation.
 
@@ -188,13 +201,11 @@ class RAGPipeline(BaseQASystem):
             str: The final (pre-guardrail) answer.
         """
 
-        processed_query = self.preprocess_query(query)
-
         # 1) Hybrid retrieval per chunk size
         candidates: List[dict] = []
         for size, retr in self.retrievers.items():
             hits = retr.hybrid_search(
-                query=query,
+                query=processed_query,
                 model=self.embed_index.model,
                 top_k_dense=self.top_k_dense,
                 top_k_sparse=self.top_k_sparse
@@ -219,7 +230,7 @@ class RAGPipeline(BaseQASystem):
         # 2) Optional re-rank
         if self.use_reranker and self.reranker is not None:
             self.logger.info('Reranking for candidates')
-            candidates = self.reranker.rerank(query, candidates, top_k=self.rerank_top_k)
+            candidates = self.reranker.rerank(processed_query, candidates, top_k=self.rerank_top_k)
         else:
             self.logger.info('Reranking skipped, Fall back to top-K by score if no reranker')
             # Fall back to top-K by score if no reranker
@@ -234,5 +245,5 @@ class RAGPipeline(BaseQASystem):
         context = "\n\n".join(context_parts)
 
         # 4) Generate answer
-        answer = self.generator.generate_answer(query, context)
+        answer = self.generator.generate_answer(processed_query, context)
         return answer

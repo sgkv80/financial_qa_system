@@ -49,16 +49,16 @@ class Chunker:
                 end          = start + chunk_size
                 chunk_tokens = tokens[start:end]  # Get 100 tokens
                 chunk_text   = tokenizer.convert_tokens_to_string(chunk_tokens)  # Convert tokens to string
-                meta = {
-                    'doc_id': doc_id,  # Document ID
+                metadata = {
+                    'id'         : doc_id,  # Document ID
                     'chunk_index': chunk_id,  # Chunk index
                     'chunk_from' : start,
                     'chunk_to'   : end,
                     'chunk_size': chunk_size,  # Chunk size
                     #TODO 'section': self.sections.get(str(doc_id), None) if hasattr(self, 'sections') else None  # Section info
-                    'section': None  
+                    'section': sections  
                 }
-                chunks.append({'id': f'chunk_{doc_id}_{chunk_size}_{chunk_id}', 'text': chunk_text, 'meta': meta})  # Add chunk
+                chunks.append({'id': f'chunk_{doc_id}_{chunk_size}_{chunk_id}', 'text': chunk_text, 'metadata': metadata})  # Add chunk
 
                 start += chunk_size - self.overlap
                 chunk_id += 1
