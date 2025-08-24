@@ -49,12 +49,8 @@ class RAGPipeline(BaseQASystem):
 
     def __init__(
         self,
-        #TODO need to fix the config paths
-        #rag_config_path: str = "configs/rag_config.yaml",
-        #base_config_path: str = "configs/app_config.yaml"
-        rag_config_path: str = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\rag_config.yaml',
-        base_config_path: str = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\app_config.yaml'
-
+        rag_config_path: str = "configs/rag_config.yaml",
+        base_config_path: str = "configs/app_config.yaml"
     ):
         super().__init__(base_config_path, rag_config_path)
         self.logger = get_logger(self.__class__.__name__)

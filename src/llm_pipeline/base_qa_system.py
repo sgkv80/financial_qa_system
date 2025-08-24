@@ -16,12 +16,13 @@ class BaseQASystem(ABC):
     Base class for QA systems with shared guardrail and answer structure.
     """
 
-    def __init__(self, base_config_path: str, llm_config_path):
+    def __init__(self, base_config_path: str, llm_config_path: str):
         """
         Initialize QA system with YAML config.
         llm_config_path will be either RAG or FineTune
         """
         self.base_config = load_config(base_config_path)
+        self.llm_config  = load_config(llm_config_path)
         self.logger = get_logger(self.__class__.__name__)
         self.guardrails = Guardrails()
 
