@@ -7,7 +7,7 @@ import streamlit as st
 from utils.logger import get_logger
 from utils.config_loader import load_config, get_root_dir
 from rag_pipeline.pipeline import RAGPipeline
-#from finetune_pipeline.pipeline import FineTunePipeline
+from finetune_pipeline.pipeline import FineTunePipeline
 from components import UIComponents
 
 
@@ -20,20 +20,16 @@ class FinancialQAApp:
     rag_config_path      = get_root_dir() / 'configs' / 'rag_config.yaml'
     finetune_config_path = get_root_dir() / 'configs' / 'finetune_config.yaml'
 
-    # base_config_path     = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\app_config.yaml'
-    # rag_config_path      = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\rag_config.yaml'
-    # finetune_config_path = r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\finetune_config.yaml'
-
     def __init__(self):
         self.logger = get_logger(self.__class__.__name__)
 
         self.ui = UIComponents()
         self.contributors = [
-            {"Name": "Student 1", "BITS id": "2021ABCD0001"},
-            {"Name": "Student 2", "BITS id": "2021ABCD0002"},
-            {"Name": "Student 3", "BITS id": "2021ABCD0003"},
-            {"Name": "Student 4", "BITS id": "2021ABCD0004"},
-            {"Name": "Student 5", "BITS id": "2021ABCD0005"},
+            {"Name": "LOKESH B",                    "BITS id": "2023ad05010"},
+            {"Name": "NAVEEN KUMAR PALISETTI",      "BITS id": "2023ac05970"},
+            {"Name": "SUBBARAYUDU GANGISETTY",      "BITS id": "2023ac05638"},
+            {"Name": "SUBBA RAO GADAMSETTY",        "BITS id": "2023ac05629"},
+            {"Name": "UJJAL KUMAR DAS",             "BITS id": "2023ac05716"},
         ]
 
     # ----------------------
@@ -49,11 +45,11 @@ class FinancialQAApp:
         return st.session_state["rag_pipeline"]
 
     @staticmethod
-    def get_ft_pipeline() -> RAGPipeline: #TODO
+    def get_ft_pipeline() -> FineTunePipeline: 
         if "ft_pipeline" not in st.session_state:
             with st.spinner("Initializing Fine-Tuning pipeline..."):
-                #ft = FineTunePipeline(finetune_config_path = FinancialQAApp.finetune_config_path, base_config_path=FinancialQAApp.base_config_path)
-                ft = None 
+                ft = FineTunePipeline(finetune_config_path = FinancialQAApp.finetune_config_path, base_config_path=FinancialQAApp.base_config_path)
+                ft.setup(force_rebuild=True)
                 st.session_state["ft_pipeline"] = ft
         return st.session_state["ft_pipeline"]
 
@@ -128,7 +124,7 @@ class FinancialQAApp:
                 pipeline = self.get_rag_pipeline()
                 answer = pipeline.safe_answer(query)
             else:
-                pipeline = self.get_rag_pipeline() #TODO change to get_ft_pileline()
+                pipeline = self.get_ft_pileline()
                 answer = pipeline.safe_answer(query)
         except Exception:
             self.logger.error("Query failed:\n" + traceback.format_exc())
@@ -137,7 +133,6 @@ class FinancialQAApp:
         return answer[0], answer[1], elapsed #answer, confidence score, time
 
     def evaluate_methods(self, qa_items):
-        #TODO calling rag pipeline for both replace with get_ft_pipeline
         rows = []
         _ = self.get_rag_pipeline()
         _ = self.get_ft_pipeline()

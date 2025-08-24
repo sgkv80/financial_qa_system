@@ -117,7 +117,6 @@ class RAGPipeline(BaseQASystem):
             return
 
         processed_dir = get_root_dir() / self.base_config["paths"]["processed_data"]
-        os.makedirs(processed_dir, exist_ok=True)
 
         # Check if processed folder has any text files
         processed_files    = [f for f in os.listdir(processed_dir) if f.endswith(".clean_text")]

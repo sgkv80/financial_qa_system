@@ -98,3 +98,6 @@ htmlcov/
 # Weights and Biases
 wandb/
 '''
+0.26.0
+0.26.0'
+distilgpt2-finetuned/*
