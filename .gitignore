@@ -101,3 +101,8 @@ wandb/
 0.26.0
 0.26.0'
 distilgpt2-finetuned/*
+logs/system.log
+src/interface/results/*
+src/interface/distilgpt2-finetuned
+src/interface/distilgpt2-finetuned/*
+
