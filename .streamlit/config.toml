@@ -1,0 +1,3 @@
+[runner.environment]
+# Set PYTHONPATH so that 'src' is recognized as a package
+PYTHONPATH = "src"
