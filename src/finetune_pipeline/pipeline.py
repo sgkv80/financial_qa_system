@@ -37,8 +37,11 @@ class FineTunePipeline(BaseQASystem):
         self.qa_dataset_file = get_root_dir() /  self.base_config["paths"]["qa_dataset"]
 
         # Initialize components
-        self.evaluator  = BaselineEvaluator(model_name=self.finetune_config["model"]["base_model"])
-        self.fine_tuner = InstructionFineTuner(model_name=self.finetune_config["model"]["base_model"], finetune_config_path=finetune_config_path, base_config_path=base_config_path)
+        self.base_model      = self.finetune_config["model"]["base_model"]
+        self.model_save_path = get_root_dir() /  self.finetune_config["model"]["save_path"]
+
+        self.evaluator  = BaselineEvaluator(model_name=self.base_model)
+        self.fine_tuner = InstructionFineTuner(model_name=self.base_model, finetune_config_path=finetune_config_path, base_config_path=base_config_path)
 
     def setup(self, force_rebuild: bool = False) -> None:
         """
@@ -107,10 +110,12 @@ class FineTunePipeline(BaseQASystem):
         """
 
         # Load fine-tuned model and tokenizer
-        model = AutoModelForCausalLM.from_pretrained("distilgpt2-finetuned")
-        tokenizer = AutoTokenizer.from_pretrained("distilgpt2-finetuned")
-        model.eval()
-        model.config.use_cache = False  # ensure loss/confidence can be computed
+        #model = AutoModelForCausalLM.from_pretrained("distilgpt2-finetuned")
+        #tokenizer = AutoTokenizer.from_pretrained("distilgpt2-finetuned")
+        #model.eval()
+        #model.config.use_cache = False  # ensure loss/confidence can be computed
+
+        model, tokenizer = self.fine_tuner.load_model()
 
         # Optional: use pipeline for generation
         generator = pipeline(

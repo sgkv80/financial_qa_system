@@ -16,9 +16,10 @@ class UIComponents:
     @staticmethod
     def show_contributors_table(contributors: List[Dict[str, str]]):
         st.subheader("Conversational AI : Group 81")
-        df = pd.DataFrame(contributors, columns=["Name", "BITS ID"])
-        df.index = df.index + 1
-        st.table(df)
+        #df = pd.DataFrame(contributors, columns=["Name", "BITS ID"])
+        #df.index = df.index + 1
+        #st.table(contributors)
+        st.table([dict(row) for row in contributors])
 
     @staticmethod
     def model_selector(default: str = "RAG") -> str:

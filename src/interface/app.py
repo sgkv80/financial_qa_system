@@ -35,24 +35,21 @@ class FinancialQAApp:
     # ----------------------
     # Lazy Loaders
     # ----------------------
-    @staticmethod
-    def get_rag_pipeline() -> RAGPipeline:
-        if "rag_pipeline" not in st.session_state:
-            with st.spinner("Initializing RAG pipeline..."):
-                rag = RAGPipeline(rag_config_path=FinancialQAApp.rag_config_path, base_config_path=FinancialQAApp.base_config_path)
-                rag.setup(force_rebuild=True)
-                st.session_state["rag_pipeline"] = rag
-        return st.session_state["rag_pipeline"]
+    
+    @st.cache_resource
+    def get_rag_pipeline(_app) -> RAGPipeline:
+        rag = RAGPipeline(rag_config_path=_app.rag_config_path, base_config_path=_app.base_config_path)
+        rag.setup(force_rebuild=True)
+        print("^^^^^^^^^  RAG setup complete  ^^^^^^^^^^^")
+        return rag
 
-    @staticmethod
-    def get_ft_pipeline() -> FineTunePipeline: 
-        if "ft_pipeline" not in st.session_state:
-            with st.spinner("Initializing Fine-Tuning pipeline..."):
-                ft = FineTunePipeline(finetune_config_path = FinancialQAApp.finetune_config_path, base_config_path=FinancialQAApp.base_config_path)
-                ft.setup(force_rebuild=True)
-                st.session_state["ft_pipeline"] = ft
-        return st.session_state["ft_pipeline"]
-
+    @st.cache_resource
+    def get_ft_pipeline(_app) -> FineTunePipeline:
+        ft = FineTunePipeline(finetune_config_path = _app.finetune_config_path, base_config_path=_app.base_config_path)
+        ft.setup(force_rebuild=True)
+        print("^^^^^^^^^  Fine-Tune setup complete  ^^^^^^^^^^^")
+        return ft
+    
     # ----------------------
     # Helpers
     # ----------------------

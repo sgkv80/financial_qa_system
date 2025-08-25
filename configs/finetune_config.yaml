@@ -9,8 +9,8 @@ dataset:
 
 model:
   base_model: "distilgpt2"
-  save_path: "models/finetuned/"
-  device: "cuda"
+  save_path: "models/finetuned/distilgpt2-finetuned"
+  device: "cpu"
 
 training:
   epochs: 5
