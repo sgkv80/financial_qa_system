@@ -18,40 +18,59 @@ class Guardrails:
         """
         guardrail_config_path = get_root_dir() / 'configs/gaurdrail_config.yaml'
         self.gaurdrail_config = load_config(guardrail_config_path)
+
         self.logger = get_logger(self.__class__.__name__)
-        self.banned_keywords = banned_keywords or ["hack", "attack", "exploit"]
-
-    def validate_query(self, query: str) -> bool:
-        """
-        Validate user query.
-
-        Args:
-            query (str): User's input query.
-
-        Returns:
-            bool: True if query is safe, False if blocked.
-        """
-        if not query.strip():
-            self.logger.warning("Query rejected: empty input.")
-            return False
         
-        for word in self.banned_keywords:
-            if word in query.lower():
-                self.logger.warning(f"Query rejected: contains banned keyword '{word}'.")
-                return False
-        return True
+        self.input_guardrails  = self.gaurdrail_config["input_guardrails"]
+        self.output_guardrails = self.gaurdrail_config["output_guardrails"]
 
-    def validate_response(self, response: str) -> str:
+
+
+    def validate_query(self, question: str) -> bool:
+
+        question_lower = question.lower()
+        
+        # Check blacklist first (unsafe/irrelevant)
+        for category in self.input_guardrails["blacklist_keywords"].values():
+            for keyword in category:
+                if keyword.lower() in question_lower:
+                    return False
+        
+        # Check whitelist (relevance)
+        found = False
+        for category in self.input_guardrails["whitelist_keywords"].values():
+            for keyword in category:
+                if keyword.lower() in question_lower:
+                    found = True
+                    break
+            if found:
+                break
+        
+        return found
+
+
+
+    # Output validation + response handling
+    def guarded_response(self, output: str, confidence: float, confidence_threshold: float = 0.6):
         """
         Validate or sanitize model-generated response.
-
-        Args:
-            response (str): Generated response text.
-
-        Returns:
-            str: Safe/filtered response.
         """
-        if not response.strip():
-            self.logger.info("Response replaced with fallback message.")
-            return "No relevant information found."
-        return response
+
+        output_lower    = output.lower()
+        
+        # Low confidence
+        if confidence < confidence_threshold:
+            return "Confidence too low to provide reliable answer.", 0.0
+
+        # Sensitive content
+        for keyword in self.output_guardrails["sensitive_response_keywords"]:
+            if keyword.lower() in output_lower:
+                return "Sensitive content detected. Cannot provide answer.", 0.0
+        
+        # Irrelevant response
+        for keyword in self.output_guardrails["irrelevant_response_keywords"]:
+            if keyword.lower() in output_lower:
+                "Generated response is irrelevant to financial reports.", 0.0
+        
+        # Valid response
+        return output, confidence

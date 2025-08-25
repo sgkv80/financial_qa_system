@@ -1,58 +1,91 @@
-irrelevant_keywords:
-  - 'capital of france'
-  - 'weather'
-  - 'sports'
-  - 'population'
-  - 'president'
-  - 'prime minister'
-  - 'holiday'
-  - 'festival'
-  - 'distance'
-  - 'height'
-  - 'temperature'
-  - 'recipe'
-  - 'movie'
-  - 'actor'
-  - 'actress'
-  - 'song'
-  - 'music'
-  - 'color'
-  - 'animal'
-  - 'country'
-  - 'city'
-  - 'state'
-  - 'language'
-  - 'currency'
-  - 'flag'
-  - 'food'
-  - 'drink'
-  - 'school'
-  - 'university'
-  - 'college'
-  - 'history'
-  - 'geography'
-  - 'science'
-  - 'math'
-  - 'physics'
-  - 'chemistry'
-  - 'biology'
-  - 'art'
-  - 'painting'
-  - 'museum'
-  - 'book'
-  - 'author'
-  - 'writer'
-  - 'novel'
-  - 'story'
-  - 'poem'
-  - 'poet'
-  - 'game'
-  - 'video game'
-  - 'app'
-  - 'software'
-  - 'hardware'
-  - 'hack'
-  - 'attack'
-  - 'exploit'
-  - 'kill'
-  - 'poison'
+input_guardrails:
+  whitelist_keywords:  # Financial relevance keywords
+    reports:
+      - "balance sheet"
+      - "income statement"
+      - "profit and loss"
+      - "cash flow"
+      - "financial statement"
+      - "annual report"
+      - "quarterly report"
+    metrics:
+      - "revenue"
+      - "net income"
+      - "operating margin"
+      - "EPS"
+      - "ROE"
+      - "ROI"
+      - "liabilities"
+      - "assets"
+      - "equity"
+    accounting_terms:
+      - "depreciation"
+      - "amortization"
+      - "accruals"
+      - "expense"
+      - "capital expenditure"
+      - "GAAP"
+      - "IFRS"
+    time_keywords:
+      - "year"
+      - "quarter"
+      - "FY"
+      - "Q1"
+      - "Q2"
+      - "Q3"
+      - "Q4"
+    company_keywords:
+      - "subsidiary"
+      - "division"
+      - "segment"
+      - "consolidated"
+      - "parent company"
+
+  blacklist_keywords:  # Irrelevant or unsafe input
+    irrelevant_topics:
+      - "capital of"
+      - "prime minister"
+      - "president"
+      - "country population"
+      - "weather"
+      - "history of"
+      - "science of"
+      - "sports"
+      - "movies"
+      - "celebrity"
+      - "music"
+      - "distance"
+      - "height"
+      - "temperature"                  
+      - "recipe"                  
+      - "actress"
+    unsafe_topics:
+      - "hack"
+      - "crack"
+      - "bypass security"
+      - "unauthorized access"
+      - "stock tips"
+      - "insider information"
+      - "price manipulation"
+      - "lawsuit"
+      - "defame"
+      - "sue"
+      - "kill"
+      - "poison"
+
+
+output_guardrails:
+  irrelevant_response_keywords:
+    - "Irrelevant question"
+    - "Not related to financial report"
+    - "Cannot answer"
+
+  low_confidence_keywords:
+    - "Data not available"
+    - "Information not present in the report"
+    - "Unable to determine"
+
+  sensitive_response_keywords:
+    - "Request not permitted"
+    - "Sensitive content"
+    - "Cannot provide advice"

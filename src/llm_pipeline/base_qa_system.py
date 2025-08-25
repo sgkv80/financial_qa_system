@@ -37,12 +37,13 @@ class BaseQASystem(ABC):
             str: Final response.
         """
         if not self.guardrails.validate_query(query):
-            return "Query blocked by guardrails."
+            return ("Irrelevant or unsafe question", 0.0)
 
         processed_query = self.preprocess_query(query)
-
         raw_answer, confidence = self.answer(processed_query)
-        safe_answer = self.guardrails.validate_response(raw_answer)
+        
+        safe_answer, confidence = self.guardrails.guarded_response(output = raw_answer, confidence = confidence)
+        
         return safe_answer, confidence
 
     def preprocess_query(self, query:str) -> str:
