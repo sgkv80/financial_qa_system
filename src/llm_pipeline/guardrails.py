@@ -51,7 +51,7 @@ class Guardrails:
 
 
     # Output validation + response handling
-    def guarded_response(self, output: str, confidence: float, confidence_threshold: float = 0.6):
+    def guarded_response(self, output: str, confidence: float, confidence_threshold: float = 0.4):
         """
         Validate or sanitize model-generated response.
         """

@@ -42,7 +42,7 @@ class BaseQASystem(ABC):
         processed_query = self.preprocess_query(query)
         raw_answer, confidence = self.answer(processed_query)
         
-        safe_answer, confidence = self.guardrails.guarded_response(output = raw_answer, confidence = confidence)
+        safe_answer, confidence = self.guardrails.guarded_response(output = raw_answer, confidence = confidence, confidence_threshold=0.4)
         
         return safe_answer, confidence
 
