@@ -45,10 +45,9 @@ financial_qa_system/
 ├── data/
 │   ├── raw/                     # Original raw data (PDFs, JSON Q&A)
 │   │   ├── amazon_2023.pdf
-│   │   ├── amazon_2024.pdf
-│   │   └── qa_pairs.json
+│   │   └── amazon_2024.pdf
 │   ├── qna/                     # qna created for fine tuning
-│   │   ├── amazon_qa_dataset.json
+│   │   └── amazon.json
 │   ├── processed/               # Processed data (cleaned text)
 │   ├── chunks/                  # chunks from processed text
 │   └── embeddings/              # Vector stores (FAISS, ChromaDB)
@@ -60,50 +59,38 @@ financial_qa_system/
 │   ├── rag/                     # Saved RAG pipeline models
 │   └── finetuned/               # Saved fine-tuned models
 │
-├── src/
-│   ├── __init__.py
-│   │
-│   ├── utils/                   # Utility functions (shared)
-│   │   ├── logger.py            # Logging setup
-│   │   ├── config_loader.py     # Load YAML configs
-│   │   └── evaluation.py        # Evaluation metrics
-│   │
-│   ├── data_processing/         # All data-related processing
-│   │   ├── preprocess.py        # Cleaning, text extraction
-│   │   ├── chunking.py          # Split into chunks
-│   │   ├── dataset_prep.py      # Prepare Q&A dataset for FT
-│   │   └── enhanced_text_cleaner.py # text cleaning utility
-│   │
-│   ├── llm_pipeline/            # common classes required for RAG and FineTuning
-│   │   ├── base_qa_system.py    # Base class for RAGPipeline and FineTunePineline
-│   │   └── guardrails.py        # Input and output guardrail implementation
-│   │
-│   ├── rag_pipeline/            # Retrieval-Augmented Generation modules
-│   │   ├── pipeline.py          # RAG pipeline setup, safe_answer
-│   │   ├── embed_index.py       # Build & store dense + sparse indices
-│   │   ├── retrieval.py         # Hybrid retrieval logic
-│   │   ├── reranker.py          # Multi-stage retrieval re-ranking
-│   │   └── generator.py         # RResponse generation module
-│   │
-│   ├── finetune_pipeline/       # Fine-tuning modules
-│   │   ├── baseline_eval.py     # Pre-fine-tuning benchmarking
-│   │   ├── trainer.py           # Fine-tuning loop
-│   │   ├── instruction_ft.py    # Supervised Instruction Fine-tuning
-│   │   ├── pipeline.py          # Fine-tuning pipeline setup, safe_answer
-│   │   └── guardrails.py        # Fine-tuning guardrail
-│   │
-│   ├── interface/               # Frontend/UI
-│   │   ├── app.py               # Streamlit/Gradio entry point
-│   │   └── components.py        # UI components (switch modes, display confidence, etc.)
-│   │
-│   └── deployment/              # Model & pipeline loading for inference
-│       ├── load_model.py        # Load saved fine-tuned model
-│       └── load_rag.py          # Load vector store & generation pipeline
-│
-└── tests/
-    ├── test_rag.py              # Unit tests for RAG modules
-    ├── test_finetune.py         # Unit tests for fine-tuning
-    └── test_interface.py        # UI and integration tests
+└── src/
+    ├── __init__.py
+    │
+    ├── utils/                   # Utility functions (shared)
+    │   ├── logger.py            # Logging setup
+    │   └── config_loader.py     # Load YAML configs
+    │
+    ├── data_processing/         # All data-related processing
+    │   ├── preprocess.py        # Cleaning, text extraction
+    │   ├── chunking.py          # Split into chunks
+    │   ├── dataset_prep.py      # Prepare Q&A dataset for FT
+    │   └── enhanced_text_cleaner.py # text cleaning utility
+    │
+    ├── llm_pipeline/            # common classes required for RAG and FineTuning
+    │   ├── base_qa_system.py    # Base class for RAGPipeline and FineTunePineline
+    │   └── guardrails.py        # Input and output guardrail implementation
+    │
+    ├── rag_pipeline/            # Retrieval-Augmented Generation modules
+    │   ├── pipeline.py          # RAG pipeline setup, safe_answer
+    │   ├── embed_index.py       # Build & store dense + sparse indices
+    │   ├── retrieval.py         # Hybrid retrieval logic
+    │   ├── reranker.py          # Multi-stage retrieval re-ranking
+    │   └── generator.py         # RResponse generation module
+    │
+    ├── finetune_pipeline/       # Fine-tuning modules
+    │   ├── baseline_eval.py     # Pre-fine-tuning benchmarking
+    │   ├── instruction_ft.py    # Supervised Instruction Fine-tuning
+    │   └── pipeline.py          # Fine-tuning pipeline setup, safe_answer
+    │
+    └── interface/               # Frontend/UI
+        ├── app.py               # Streamlit app entry point
+        └── components.py        # UI components (switch modes, display confidence, etc.)
 ```
 
 ## Quick Start
@@ -117,7 +104,7 @@ financial_qa_system/
 
 2. **Prepare Data**
    - Place your financial reports in `data/raw/`
-   - Ensure Q&A pairs are in `data/qa/qa_pairs.json`
+   - Ensure Q&A pairs are in `data/qna/amazon.json`
 
 4. **Launch Interface**
    ```bash
@@ -137,36 +124,12 @@ financial_qa_system/
 ### Fine-Tuning System  
 - **Supervised Instruction Fine-Tuning**: Custom Q&A training
 - **Efficient Training**: Gradient accumulation and learning rate scheduling
-- **Model Checkpointing**: Resume training and model versioning
-- **Baseline Benchmarking**: Pre/post fine-tuning comparison
-
-### Evaluation Framework
-- **Comprehensive Metrics**: Accuracy, speed, confidence scoring
-- **Robustness Testing**: Relevant, irrelevant, and edge-case questions  
-- **Statistical Analysis**: Detailed performance comparison
-- **Visualization**: Interactive results dashboard
+- **Model**: Used **distilgpt2** model with APIs from Hugging Face and utility for torch
+- **Guardrails**: Input validation and output filtering
 
 ## Configuration
 
 - app_config.yaml - Application configuration
-   * Central entrypoint for project settings
-   * Defines data/model/log paths 
-   * Controls default UI type (Streamlit/Gradio/CLI)
-
 - finetune_config.yaml - Fine-tuning parameters
-  * Defines dataset splits for training/validation/testing
-  * Sets model & training hyperparameters
-  * Enables instruction-style fine-tuning
-  * Controls logging & guardrails during training
-
-- gaurdrail_config.yaml
-  * Rejects irrelevant questions (e.g., weather, sports, trivia)
-  * Ensures Query and Answer remains focused on financial domain
-  * new word tokens can be added to this file.
-
+- gaurdrail_config.yaml - Gaurdrail configurations parameters
 - rag_config.yaml - RAG-specific settings
-  * Controls preprocessing (chunking size & overlap)
-  * Defines embedding model & vector index type (FAISS/BM25)
-  * Configures retrieval fusion (dense+sparse weighting)
-  * Enables reranking with cross-encoder
-  * Specifies generator model and output length
