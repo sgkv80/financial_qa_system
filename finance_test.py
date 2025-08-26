@@ -1,7 +1,29 @@
-from src.data_processing.preprocess import Preprocessor
-from src.data_processing.chunking import Chunker
-from src.rag_pipeline.pipeline import RAGPipeline
-from src.finetune_pipeline.pipeline import FineTunePipeline
+import sys
+import os
+from pathlib import Path
+
+#print(sys.path)
+# # Add src directory to Python path
+src_path = Path(__file__) #C:\Personal\BITS\Sem3\financial_qa_system_working\financial_qa_system\finance_test.py
+print(src_path)
+
+src_path = Path(__file__).parent
+print(src_path)
+
+src_path = os.path.join(src_path, 'src')
+print(src_path)
+
+if src_path not in sys.path:
+    print("need to update the path here")
+    sys.path.append(src_path)
+#sys.path.insert(0, str(src_path))    
+
+
+
+from data_processing.preprocess import Preprocessor
+from data_processing.chunking import Chunker
+from rag_pipeline.pipeline import RAGPipeline
+from finetune_pipeline.pipeline import FineTunePipeline
 
 # Preprocess PDFs
 #prep = Preprocessor(base_config_path=r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\app_config.yaml')
@@ -18,8 +40,8 @@ from src.finetune_pipeline.pipeline import FineTunePipeline
 # rag.setup(force_rebuild=False)
 # print(rag.safe_answer("What is the revenue in 2023"))
 
-ft = FineTunePipeline(base_config_path=r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\app_config.yaml',
-                      finetune_config_path=r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\finetune_config.yaml')
-ft.setup(force_rebuild=False)
+# ft = FineTunePipeline(base_config_path=r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\app_config.yaml',
+#                       finetune_config_path=r'C:\Personal\BITS\Sem3\financial_qa_system\financial_qa_system\configs\finetune_config.yaml')
+# ft.setup(force_rebuild=False)
 
-print(ft.safe_answer("What is the revenue in 2023"))
+# print(ft.safe_answer("What is the revenue in 2023"))

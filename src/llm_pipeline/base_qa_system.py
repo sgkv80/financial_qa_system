@@ -8,8 +8,7 @@ from abc import ABC, abstractmethod
 from utils.logger import get_logger
 from utils.config_loader import load_config
 from llm_pipeline.guardrails import Guardrails
-from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS  # Import stopwords
-import re  # Import regex
+
 
 class BaseQASystem(ABC):
     """
@@ -39,25 +38,15 @@ class BaseQASystem(ABC):
         if not self.guardrails.validate_query(query):
             return ("Irrelevant or unsafe question", 0.0)
 
-        processed_query = self.preprocess_query(query)
-        raw_answer, confidence = self.answer(processed_query)
+        raw_answer, confidence      = self.answer(query)
         
-        safe_answer, confidence = self.guardrails.guarded_response(output = raw_answer, confidence = confidence, confidence_threshold=0.4)
+        safe_answer, new_confidence = self.guardrails.guarded_response(output = raw_answer, confidence = confidence, confidence_threshold=0.4)
         
-        return safe_answer, confidence
+        self.logger.info(f'query:{query}')
+        self.logger.info(f'raw_answer: {raw_answer}, confidence: {confidence}')
+        self.logger.info(f'safe_answer: {safe_answer}, new_confidence: {new_confidence}')
+        return safe_answer, new_confidence
 
-    def preprocess_query(self, query:str) -> str:
-        self.logger.info(f'preprocessing the query. query: {query}')
-        # Lowercase
-        query = query.lower()  # Convert to lowercase
-        # Remove non-alphanumeric characters
-        query = re.sub(r'[^a-z0-9 ]', ' ', query)  # Remove special chars
-        # Remove stopwords
-        tokens = query.split()  # Split into tokens
-        filtered_tokens = [t for t in tokens if t not in ENGLISH_STOP_WORDS]  # Remove stopwords
-        preprocessed = ' '.join(filtered_tokens)  # Join tokens
-        self.logger.info(f'Preprocessed query: {preprocessed}')  # Log result
-        return preprocessed  # Return preprocessed query
 
     @abstractmethod
     def answer(self, query: str) -> tuple:

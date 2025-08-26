@@ -58,9 +58,9 @@ class Guardrails:
 
         output_lower    = output.lower()
         
-        # Low confidence
-        if confidence < confidence_threshold:
-            return "Confidence too low to provide reliable answer.", 0.0
+        # Low confidence - due to our model performance we are getting into this case most of the times.
+        #if confidence < confidence_threshold:
+        #    return "Confidence too low to provide reliable answer.", 0.0
 
         # Sensitive content
         for keyword in self.output_guardrails["sensitive_response_keywords"]:

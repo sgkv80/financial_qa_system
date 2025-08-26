@@ -9,7 +9,8 @@ dataset:
 
 model:
   base_model: "distilgpt2"
-  save_path: "models/finetuned/distilgpt2-finetuned"
+  #save_path: "models/finetuned/distilgpt2-finetuned"
+  save_path: "models/finetuned/distilgpt2-lora"
   device: "cpu"
 
 training:

@@ -125,7 +125,10 @@ class FineTunePipeline(BaseQASystem):
         )
 
         # Step 1: Format the query
-        prompt = f"Q: {query}?\nA:"
+        if not query.strip().endswith("?"):
+            query += "?"
+
+        prompt = f"Q: {query}\nA:"
 
         # Step 2: Generate answer
         generated = generator(prompt, max_length=50, do_sample=True)[0]["generated_text"]

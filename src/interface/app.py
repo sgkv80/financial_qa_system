@@ -4,7 +4,8 @@ import os
 # Dynamically add the 'src' folder to Python path
 # This works no matter where Streamlit mounts the repo yes
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))          # .../src/interface
-SRC_DIR = os.path.dirname(CURRENT_DIR)                            # .../src
+SRC_DIR = os.path.dirname(CURRENT_DIR) 
+print(CURRENT_DIR, SRC_DIR)
 if SRC_DIR not in sys.path:
     sys.path.append(SRC_DIR)
 
